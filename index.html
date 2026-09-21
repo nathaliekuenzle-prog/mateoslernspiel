@@ -33,7 +33,6 @@
     }
     .screen { display: none; padding-bottom: 20px; }
     .screen.aktiv { display: block; }
-    /* Platz oben für den festen Zurück-Knopf in den Spielen */
     #spiel1, #spiel2, #spiel3 { padding-top: 58px; }
 
     .knopf {
@@ -64,7 +63,6 @@
     .buchstaben-knopf.falsch { background: #e07a3f; color: white; }
     .meldung { font-size: 34px; height: 44px; margin-top: 14px; color: #c8622d; }
 
-    /* Fester Zurück-Knopf oben links */
     .zurueck {
       position: fixed; top: calc(env(safe-area-inset-top) + 10px); left: 12px; z-index: 55;
       font-size: 18px; background: #ffd27f; color: #5a3a1a; border: 3px solid #fff3d6;
@@ -229,7 +227,7 @@
       }
     }
 
-    // ====== RESET per LANGEM DRÜCKEN auf die Level-Anzeige ======
+    // ====== RESET per LANGEM DRÜCKEN ======
     function fortschrittZuruecksetzen() {
       if (confirm("Wirklich Mateos Fortschritt löschen?")) {
         localStorage.clear();
@@ -293,6 +291,16 @@
       for (const e of elemente) { zufall -= gewichte[e]; if (zufall <= 0) return e; }
       return elemente[0];
     }
+    // Wählt gewichtet, aber möglichst nicht dasselbe wie zuletzt
+    function waehleOhneWiederholung(gewichte, elemente, letztes) {
+      if (elemente.length <= 1) return elemente[0];
+      let wahl, versuche = 0;
+      do {
+        wahl = waehleGewichtet(gewichte, elemente);
+        versuche++;
+      } while (wahl === letztes && versuche < 12);
+      return wahl;
+    }
     function aktualisiereGewicht(gewichte, element, warRichtig) {
       if (warRichtig) gewichte[element] = Math.max(0.3, gewichte[element] - 0.3);
       else gewichte[element] = Math.min(6, gewichte[element] + 1.5);
@@ -300,10 +308,10 @@
 
     // ====== AUFBAUENDES BUCHSTABEN-SYSTEM ======
     const buchstabenStufen = [
-      ["M","A","T","E","O","I","L","K","P"],
-      ["N","S","U","B","D"],
-      ["R","F","G","H","W","Z"],
-      ["C","J","Q","V","X","Y"]
+      ["M","A","T","E","O","I","L","K","P","H","N"], // Stufe 1 (jetzt mit H und N)
+      ["S","U","B","D"],                             // Stufe 2
+      ["R","F","G","W","Z"],                         // Stufe 3
+      ["C","J","Q","V","X","Y"]                      // Stufe 4
     ];
     let aktuelleStufe = parseInt(localStorage.getItem('mateo_stufe') || '0');
     function aktiveBuchstaben() {
@@ -327,13 +335,13 @@
     function zeigeMenue() {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
       document.getElementById('menue').classList.add('aktiv');
-      document.getElementById('sterneZaehler').style.display = 'none'; // im Menü ausblenden
+      document.getElementById('sterneZaehler').style.display = 'none';
       zeigeFortschritt();
     }
     function spielStart(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
       document.getElementById(id).classList.add('aktiv');
-      document.getElementById('sterneZaehler').style.display = 'block'; // in Spielen zeigen
+      document.getElementById('sterneZaehler').style.display = 'block';
     }
     function zeigeSpiel1() { spielStart('spiel1'); neueAufgabe1(); }
     function zeigeSpiel2() { spielStart('spiel2'); neueAufgabe2(); }
@@ -341,13 +349,17 @@
 
     function mischen(liste) { return liste.slice().sort(() => Math.random() - 0.5); }
 
+    // Merkt sich das jeweils Letzte (gegen Wiederholung)
+    let letztes1 = "", letztes2 = "", letztes3 = "";
+
     // ====== SPIEL 1 ======
     const alleBuchstaben = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     let gewichteBuchstaben = ladeGewichte('mateo_buchstaben', alleBuchstaben);
     function neueAufgabe1() {
       document.getElementById('meldung1').textContent = "";
       const aktive = aktiveBuchstaben();
-      const richtiger = waehleGewichtet(gewichteBuchstaben, aktive);
+      const richtiger = waehleOhneWiederholung(gewichteBuchstaben, aktive, letztes1);
+      letztes1 = richtiger;
       document.getElementById('grosserBuchstabe').textContent = richtiger;
       const falsche = mischen(aktive.filter(b => b !== richtiger)).slice(0, 2);
       const optionen = mischen([richtiger, ...falsche]);
@@ -382,16 +394,42 @@
 
     // ====== WÖRTER ======
     const woerter = [
-      { emoji: "👵", wort: "OMA" }, { emoji: "👴", wort: "OPA" },
-      { emoji: "🌴", wort: "PALME" }, { emoji: "🍅", wort: "TOMATE" },
-      { emoji: "🦙", wort: "LAMA" }, { emoji: "💡", wort: "LAMPE" },
-      { emoji: "📦", wort: "PAKET" }, { emoji: "🐭", wort: "MAUS" },
-      { emoji: "👃", wort: "NASE" }, { emoji: "🌳", wort: "BAUM" },
-      { emoji: "🌸", wort: "BLUME" }, { emoji: "🍌", wort: "BANANE" },
-      { emoji: "🌙", wort: "MOND" }, { emoji: "🐶", wort: "HUND" },
-      { emoji: "🏠", wort: "HAUS" }, { emoji: "🌹", wort: "ROSE" },
-      { emoji: "🐰", wort: "HASE" }, { emoji: "🍴", wort: "GABEL" },
-      { emoji: "🚂", wort: "ZUG" }, { emoji: "🐦", wort: "VOGEL" }
+      // --- Level 1 (Buchstaben M,A,T,E,O,I,L,K,P,H,N) ---
+      { emoji: "👵", wort: "OMA" },
+      { emoji: "👴", wort: "OPA" },
+      { emoji: "👩", wort: "MAMA" },
+      { emoji: "🏕️", wort: "TIPI" },
+      { emoji: "🌴", wort: "PALME" },
+      { emoji: "🍅", wort: "TOMATE" },
+      { emoji: "🦙", wort: "LAMA" },
+      { emoji: "💡", wort: "LAMPE" },
+      { emoji: "📦", wort: "PAKET" },
+      { emoji: "🐫", wort: "KAMEL" },
+      { emoji: "🦈", wort: "HAI" },
+      { emoji: "🎦", wort: "KINO" },
+      { emoji: "🏨", wort: "HOTEL" },
+      { emoji: "🍈", wort: "MELONE" },
+      { emoji: "🎹", wort: "PIANO" },
+      { emoji: "⛑️", wort: "HELM" },
+      { emoji: "🪐", wort: "PLANET" },
+      // --- höhere Level ---
+      { emoji: "🐭", wort: "MAUS" },
+      { emoji: "👃", wort: "NASE" },
+      { emoji: "🌳", wort: "BAUM" },
+      { emoji: "🌸", wort: "BLUME" },
+      { emoji: "🍌", wort: "BANANE" },
+      { emoji: "🌙", wort: "MOND" },
+      { emoji: "🐶", wort: "HUND" },
+      { emoji: "🏠", wort: "HAUS" },
+      { emoji: "🌹", wort: "ROSE" },
+      { emoji: "🐰", wort: "HASE" },
+      { emoji: "🍴", wort: "GABEL" },
+      { emoji: "🚂", wort: "ZUG" },
+      { emoji: "🐦", wort: "VOGEL" },
+      { emoji: "🐟", wort: "FISCH" },
+      { emoji: "⭐", wort: "STERN" },
+      { emoji: "🔥", wort: "FEUER" },
+      { emoji: "🦊", wort: "FUCHS" }
     ];
     const wortListe = woerter.map(w => w.wort);
     let gewichteWoerter = ladeGewichte('mateo_woerter', wortListe);
@@ -409,7 +447,8 @@
       document.getElementById('meldung2').textContent = "";
       naechsterIndex = 0;
       const namen = verfuegbareWoerter().map(w => w.wort);
-      aktuellesWort = waehleGewichtet(gewichteWoerter, namen);
+      aktuellesWort = waehleOhneWiederholung(gewichteWoerter, namen, letztes2);
+      letztes2 = aktuellesWort;
       document.getElementById('bild2').textContent = findeEmoji(aktuellesWort);
       const wortZeile = document.getElementById('wortZeile');
       wortZeile.innerHTML = "";
@@ -465,7 +504,8 @@
       document.getElementById('meldung3').textContent = "";
       index3 = 0;
       const namen = verfuegbareWoerter().map(w => w.wort);
-      wort3 = waehleGewichtet(gewichteWoerter, namen);
+      wort3 = waehleOhneWiederholung(gewichteWoerter, namen, letztes3);
+      letztes3 = wort3;
       document.getElementById('bild3').textContent = findeEmoji(wort3);
       const zeile = document.getElementById('wortZeile3');
       zeile.innerHTML = "";
@@ -515,7 +555,6 @@
       }
     }
 
-    // Beim Start: Menü zeigen (Zähler ausgeblendet)
     document.getElementById('sterneZaehler').style.display = 'none';
     zeigeFortschritt();
   </script>
