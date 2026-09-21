@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mateo">
   <meta name="theme-color" content="#c8622d">
+  <link rel="apple-touch-icon" href="bilder/icon.png">
   <title>Mateos Lernspiel</title>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -20,82 +21,92 @@
       overflow-x: hidden;
     }
     h1 {
-      font-size: 40px; margin: 20px 0 6px; color: #c8622d;
+      font-size: 34px; margin: 12px 0 4px; color: #c8622d;
       text-shadow: 2px 2px 0 #fff3; letter-spacing: 1px;
     }
     h1::before { content: "🪶 "; }
     h1::after { content: " 🪶"; }
     .stufe-anzeige {
-      display: inline-block; font-size: 20px; color: #fff; background: #8b5a2b;
-      padding: 8px 24px; border-radius: 20px; margin: 4px auto 16px;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.2); border: 3px solid #ffe0a3;
+      display: inline-block; font-size: 18px; color: #fff; background: #8b5a2b;
+      padding: 6px 20px; border-radius: 20px; margin: 4px auto 10px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.2); border: 3px solid #ffe0a3; cursor: pointer;
     }
-    .screen { display: none; padding-bottom: 30px; }
+    .screen { display: none; padding-bottom: 20px; }
     .screen.aktiv { display: block; }
+    /* Platz oben für den festen Zurück-Knopf in den Spielen */
+    #spiel1, #spiel2, #spiel3 { padding-top: 58px; }
+
     .knopf {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      width: 86%; max-width: 480px; margin: 18px auto; padding: 22px;
-      color: white; border: 4px solid #fff3d6; border-radius: 26px; cursor: pointer;
-      box-shadow: 0 6px 0 rgba(0,0,0,0.25); transition: transform 0.1s; font-family: inherit;
+      width: 88%; max-width: 460px; margin: 10px auto; padding: 12px;
+      color: white; border: 4px solid #fff3d6; border-radius: 22px; cursor: pointer;
+      box-shadow: 0 5px 0 rgba(0,0,0,0.25); transition: transform 0.1s; font-family: inherit;
     }
-    .knopf:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
+    .knopf:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
     .knopf1 { background: linear-gradient(160deg, #e07a3f, #c8622d); }
     .knopf2 { background: linear-gradient(160deg, #4a90a4, #2e6e7e); }
     .knopf3 { background: linear-gradient(160deg, #6a9c4f, #4d7a37); }
-    .beispiel { font-size: 44px; font-weight: bold; letter-spacing: 4px; margin-bottom: 8px; }
-    .titel { font-size: 20px; letter-spacing: 2px; }
-    .wackel { display: inline-block; background: rgba(255,255,255,0.25); border-radius: 8px; padding: 2px 8px; margin: 0 2px; }
+    .beispiel { font-size: 32px; font-weight: bold; letter-spacing: 3px; margin-bottom: 4px; }
+    .titel { font-size: 17px; letter-spacing: 2px; }
+    .wackel { display: inline-block; background: rgba(255,255,255,0.25); border-radius: 8px; padding: 1px 6px; margin: 0 2px; }
     .schief1 { transform: rotate(-12deg); } .schief2 { transform: rotate(8deg); } .schief3 { transform: rotate(-5deg); }
     .grosser-buchstabe {
-      font-size: 130px; font-weight: bold; color: #c8622d; margin: 10px auto; text-shadow: 3px 3px 0 #fff6;
+      font-size: 120px; font-weight: bold; color: #c8622d; margin: 6px auto; text-shadow: 3px 3px 0 #fff6;
     }
-    .auswahl { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-top: 16px; }
+    .auswahl { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
     .buchstaben-knopf {
-      font-size: 64px; font-weight: bold; width: 110px; height: 110px;
+      font-size: 60px; font-weight: bold; width: 100px; height: 100px;
       background: #fff8ec; color: #5a3a1a; border: 5px solid #6a9c4f; border-radius: 24px;
       cursor: pointer; font-family: inherit; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
     }
     .buchstaben-knopf:active { transform: translateY(4px); }
     .buchstaben-knopf.richtig { background: #6a9c4f; color: white; }
     .buchstaben-knopf.falsch { background: #e07a3f; color: white; }
-    .meldung { font-size: 36px; height: 48px; margin-top: 18px; color: #c8622d; }
+    .meldung { font-size: 34px; height: 44px; margin-top: 14px; color: #c8622d; }
+
+    /* Fester Zurück-Knopf oben links */
     .zurueck {
-      font-size: 20px; background: #ffd27f; color: #5a3a1a; border: 3px solid #fff3d6;
-      border-radius: 20px; padding: 10px 22px; margin: 16px; cursor: pointer;
+      position: fixed; top: calc(env(safe-area-inset-top) + 10px); left: 12px; z-index: 55;
+      font-size: 18px; background: #ffd27f; color: #5a3a1a; border: 3px solid #fff3d6;
+      border-radius: 18px; padding: 9px 18px; cursor: pointer;
       font-family: inherit; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
     }
-    .bild-emoji { font-size: 110px; margin: 6px auto; }
-    .wort-zeile { display: flex; justify-content: center; gap: 10px; margin: 16px auto; min-height: 84px; flex-wrap: wrap; }
+
+    .bild-emoji { font-size: 100px; margin: 4px auto; }
+    .wort-zeile { display: flex; justify-content: center; gap: 6px; margin: 12px auto; min-height: 70px; flex-wrap: nowrap; }
     .slot {
-      width: 60px; height: 80px; border: 4px dashed #2e6e7e; border-radius: 15px;
-      display: flex; align-items: center; justify-content: center; font-size: 50px; font-weight: bold; color: #2e6e7e;
-      background: rgba(255,255,255,0.35);
+      width: 48px; height: 66px; border: 4px dashed #2e6e7e; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; color: #2e6e7e;
+      background: rgba(255,255,255,0.35); flex-shrink: 0;
     }
     .slot.gefuellt { border-style: solid; background: #2e6e7e; color: white; }
-    .buchstaben-vorrat { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .buchstaben-vorrat { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
     .vorrat-knopf {
-      font-size: 50px; font-weight: bold; width: 84px; height: 84px;
-      background: #fff8ec; color: #5a3a1a; border: 5px solid #e07a3f; border-radius: 20px;
+      font-size: 46px; font-weight: bold; width: 76px; height: 76px;
+      background: #fff8ec; color: #5a3a1a; border: 5px solid #e07a3f; border-radius: 18px;
       cursor: pointer; font-family: inherit; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
     }
     .vorrat-knopf:active { transform: translateY(4px); }
     .vorrat-knopf.benutzt { visibility: hidden; }
-    .tastatur { max-width: 750px; margin: 18px auto; }
-    .tasten-reihe { display: flex; justify-content: center; gap: 6px; margin-bottom: 6px; }
+
+    .tastatur { width: 100%; max-width: 500px; margin: 14px auto 0; }
+    .tasten-reihe { display: flex; justify-content: center; gap: 4px; margin-bottom: 5px; }
     .taste {
-      font-size: 28px; font-weight: bold; width: 9vw; max-width: 58px; height: 58px;
-      background: #fff8ec; color: #5a3a1a; border: 3px solid #6a9c4f; border-radius: 12px;
-      cursor: pointer; font-family: inherit; box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
+      font-size: 22px; font-weight: bold;
+      width: calc((100vw - 60px) / 10); max-width: 44px; height: 48px;
+      background: #fff8ec; color: #5a3a1a; border: 2px solid #6a9c4f; border-radius: 10px;
+      cursor: pointer; font-family: inherit; box-shadow: 0 3px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
     }
-    .taste:active { transform: translateY(3px); }
+    .taste:active { transform: translateY(2px); }
     .taste.falsch { background: #e07a3f; color: white; }
     .slot.gruen { border-color: #6a9c4f; color: #6a9c4f; }
     .slot.gruen.gefuellt { background: #6a9c4f; color: white; }
+
     .sterne-zaehler {
-      position: fixed; top: calc(env(safe-area-inset-top) + 10px); right: 14px;
-      font-size: 18px; font-weight: bold; color: #fff; background: #8b5a2b;
+      position: fixed; top: calc(env(safe-area-inset-top) + 10px); right: 12px;
+      font-size: 17px; font-weight: bold; color: #fff; background: #8b5a2b;
       padding: 7px 14px; border-radius: 18px; border: 2px solid #ffe0a3;
-      box-shadow: 0 3px 0 rgba(0,0,0,0.2); z-index: 50;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.2); z-index: 55; cursor: pointer;
     }
     .konfetti {
       position: fixed; top: -30px; font-size: 26px;
@@ -109,12 +120,9 @@
       0% { transform: scale(0.5); } 50% { transform: scale(1.3); } 100% { transform: scale(1); }
     }
     .meldung.jubel { animation: pulsieren 0.6s ease; }
-
-    /* --- Yakari-Stil-Figuren --- */
     .figur {
-      width: 40%; max-width: 220px; height: auto;
-      margin: 10px auto 0; display: block;
-      border-radius: 20px;
+      width: 34%; max-width: 150px; height: auto;
+      margin: 6px auto 0; display: block; border-radius: 20px;
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
     }
   </style>
@@ -122,10 +130,6 @@
 <body>
 
   <div id="sterneZaehler" class="sterne-zaehler">LEVEL 1 · 0/10</div>
-  <button onclick="fortschrittZuruecksetzen()"
-    style="position:fixed; top:calc(env(safe-area-inset-top) + 8px); left:8px; z-index:60; font-size:11px;
-    opacity:0.4; background:#8b5a2b; color:#fff; border:none;
-    border-radius:10px; padding:4px 8px;">reset</button>
 
   <!-- ============ STARTMENÜ ============ -->
   <div id="menue" class="screen aktiv">
@@ -225,6 +229,28 @@
       }
     }
 
+    // ====== RESET per LANGEM DRÜCKEN auf die Level-Anzeige ======
+    function fortschrittZuruecksetzen() {
+      if (confirm("Wirklich Mateos Fortschritt löschen?")) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+    function langesDruecken(element) {
+      if (!element) return;
+      let timer = null;
+      const start = () => { timer = setTimeout(fortschrittZuruecksetzen, 1200); };
+      const stop = () => { clearTimeout(timer); };
+      element.addEventListener('touchstart', start, { passive: true });
+      element.addEventListener('touchend', stop);
+      element.addEventListener('touchmove', stop);
+      element.addEventListener('mousedown', start);
+      element.addEventListener('mouseup', stop);
+      element.addEventListener('mouseleave', stop);
+    }
+    langesDruecken(document.getElementById('sterneZaehler'));
+    langesDruecken(document.getElementById('stufeAnzeige'));
+
     // ====== TÖNE ======
     let audioCtx = null;
     function spieleTon(frequenz, start, dauer, typ = 'sine') {
@@ -301,23 +327,17 @@
     function zeigeMenue() {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
       document.getElementById('menue').classList.add('aktiv');
+      document.getElementById('sterneZaehler').style.display = 'none'; // im Menü ausblenden
       zeigeFortschritt();
     }
-    function zeigeSpiel1() {
+    function spielStart(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
-      document.getElementById('spiel1').classList.add('aktiv');
-      neueAufgabe1();
+      document.getElementById(id).classList.add('aktiv');
+      document.getElementById('sterneZaehler').style.display = 'block'; // in Spielen zeigen
     }
-    function zeigeSpiel2() {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
-      document.getElementById('spiel2').classList.add('aktiv');
-      neueAufgabe2();
-    }
-    function zeigeSpiel3() {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
-      document.getElementById('spiel3').classList.add('aktiv');
-      neueAufgabe3();
-    }
+    function zeigeSpiel1() { spielStart('spiel1'); neueAufgabe1(); }
+    function zeigeSpiel2() { spielStart('spiel2'); neueAufgabe2(); }
+    function zeigeSpiel3() { spielStart('spiel3'); neueAufgabe3(); }
 
     function mischen(liste) { return liste.slice().sort(() => Math.random() - 0.5); }
 
@@ -494,13 +514,9 @@
         }, 800);
       }
     }
-    function fortschrittZuruecksetzen() {
-      if (confirm("Wirklich Mateos Fortschritt löschen?")) {
-        localStorage.clear();
-        location.reload();
-      }
-    }
 
+    // Beim Start: Menü zeigen (Zähler ausgeblendet)
+    document.getElementById('sterneZaehler').style.display = 'none';
     zeigeFortschritt();
   </script>
 
