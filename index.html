@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mateo">
+  <meta name="theme-color" content="#c8622d">
+  <title>Mateos Lernspiel</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body {
+      font-family: 'Chalkboard SE', 'Comic Sans MS', 'Arial Rounded MT Bold', system-ui, sans-serif;
+      background: linear-gradient(180deg, #7ec8e3 0%, #a8dda8 60%, #d9b36a 100%);
+      text-align: center; color: #5a3a1a;
+      user-select: none; -webkit-user-select: none;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      overflow-x: hidden;
+    }
+    h1 {
+      font-size: 40px; margin: 20px 0 6px; color: #c8622d;
+      text-shadow: 2px 2px 0 #fff3; letter-spacing: 1px;
+    }
+    h1::before { content: "🪶 "; }
+    h1::after { content: " 🪶"; }
+    .stufe-anzeige {
+      display: inline-block; font-size: 20px; color: #fff; background: #8b5a2b;
+      padding: 8px 24px; border-radius: 20px; margin: 4px auto 16px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.2); border: 3px solid #ffe0a3;
+    }
+    .screen { display: none; padding-bottom: 30px; }
+    .screen.aktiv { display: block; }
+    .knopf {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      width: 86%; max-width: 480px; margin: 18px auto; padding: 22px;
+      color: white; border: 4px solid #fff3d6; border-radius: 26px; cursor: pointer;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.25); transition: transform 0.1s; font-family: inherit;
+    }
+    .knopf:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
+    .knopf1 { background: linear-gradient(160deg, #e07a3f, #c8622d); }
+    .knopf2 { background: linear-gradient(160deg, #4a90a4, #2e6e7e); }
+    .knopf3 { background: linear-gradient(160deg, #6a9c4f, #4d7a37); }
+    .beispiel { font-size: 44px; font-weight: bold; letter-spacing: 4px; margin-bottom: 8px; }
+    .titel { font-size: 20px; letter-spacing: 2px; }
+    .wackel { display: inline-block; background: rgba(255,255,255,0.25); border-radius: 8px; padding: 2px 8px; margin: 0 2px; }
+    .schief1 { transform: rotate(-12deg); } .schief2 { transform: rotate(8deg); } .schief3 { transform: rotate(-5deg); }
+    .grosser-buchstabe {
+      font-size: 130px; font-weight: bold; color: #c8622d; margin: 10px auto; text-shadow: 3px 3px 0 #fff6;
+    }
+    .auswahl { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-top: 16px; }
+    .buchstaben-knopf {
+      font-size: 64px; font-weight: bold; width: 110px; height: 110px;
+      background: #fff8ec; color: #5a3a1a; border: 5px solid #6a9c4f; border-radius: 24px;
+      cursor: pointer; font-family: inherit; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
+    }
+    .buchstaben-knopf:active { transform: translateY(4px); }
+    .buchstaben-knopf.richtig { background: #6a9c4f; color: white; }
+    .buchstaben-knopf.falsch { background: #e07a3f; color: white; }
+    .meldung { font-size: 36px; height: 48px; margin-top: 18px; color: #c8622d; }
+    .zurueck {
+      font-size: 20px; background: #ffd27f; color: #5a3a1a; border: 3px solid #fff3d6;
+      border-radius: 20px; padding: 10px 22px; margin: 16px; cursor: pointer;
+      font-family: inherit; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    }
+    .bild-emoji { font-size: 110px; margin: 6px auto; }
+    .wort-zeile { display: flex; justify-content: center; gap: 10px; margin: 16px auto; min-height: 84px; flex-wrap: wrap; }
+    .slot {
+      width: 60px; height: 80px; border: 4px dashed #2e6e7e; border-radius: 15px;
+      display: flex; align-items: center; justify-content: center; font-size: 50px; font-weight: bold; color: #2e6e7e;
+      background: rgba(255,255,255,0.35);
+    }
+    .slot.gefuellt { border-style: solid; background: #2e6e7e; color: white; }
+    .buchstaben-vorrat { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .vorrat-knopf {
+      font-size: 50px; font-weight: bold; width: 84px; height: 84px;
+      background: #fff8ec; color: #5a3a1a; border: 5px solid #e07a3f; border-radius: 20px;
+      cursor: pointer; font-family: inherit; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
+    }
+    .vorrat-knopf:active { transform: translateY(4px); }
+    .vorrat-knopf.benutzt { visibility: hidden; }
+    .tastatur { max-width: 750px; margin: 18px auto; }
+    .tasten-reihe { display: flex; justify-content: center; gap: 6px; margin-bottom: 6px; }
+    .taste {
+      font-size: 28px; font-weight: bold; width: 9vw; max-width: 58px; height: 58px;
+      background: #fff8ec; color: #5a3a1a; border: 3px solid #6a9c4f; border-radius: 12px;
+      cursor: pointer; font-family: inherit; box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
+    }
+    .taste:active { transform: translateY(3px); }
+    .taste.falsch { background: #e07a3f; color: white; }
+    .slot.gruen { border-color: #6a9c4f; color: #6a9c4f; }
+    .slot.gruen.gefuellt { background: #6a9c4f; color: white; }
+    .sterne-zaehler {
+      position: fixed; top: calc(env(safe-area-inset-top) + 10px); right: 14px;
+      font-size: 18px; font-weight: bold; color: #fff; background: #8b5a2b;
+      padding: 7px 14px; border-radius: 18px; border: 2px solid #ffe0a3;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.2); z-index: 50;
+    }
+    .konfetti {
+      position: fixed; top: -30px; font-size: 26px;
+      z-index: 100; pointer-events: none; animation: fallen 3s linear forwards;
+    }
+    @keyframes fallen {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(540deg); opacity: 0.9; }
+    }
+    @keyframes pulsieren {
+      0% { transform: scale(0.5); } 50% { transform: scale(1.3); } 100% { transform: scale(1); }
+    }
+    .meldung.jubel { animation: pulsieren 0.6s ease; }
+
+    /* --- Yakari-Stil-Figuren --- */
+    .figur {
+      width: 40%; max-width: 220px; height: auto;
+      margin: 10px auto 0; display: block;
+      border-radius: 20px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    }
+  </style>
+</head>
+<body>
+
+  <div id="sterneZaehler" class="sterne-zaehler">LEVEL 1 · 0/10</div>
+  <button onclick="fortschrittZuruecksetzen()"
+    style="position:fixed; top:calc(env(safe-area-inset-top) + 8px); left:8px; z-index:60; font-size:11px;
+    opacity:0.4; background:#8b5a2b; color:#fff; border:none;
+    border-radius:10px; padding:4px 8px;">reset</button>
+
+  <!-- ============ STARTMENÜ ============ -->
+  <div id="menue" class="screen aktiv">
+    <h1>MATEO</h1>
+    <img src="bilder/start.png" alt="Mateo mit Pony" class="figur">
+    <div id="stufeAnzeige" class="stufe-anzeige"></div>
+    <button class="knopf knopf1" onclick="zeigeSpiel1()">
+      <div class="beispiel">A ➡️ a</div>
+      <div class="titel">GROSS UND KLEIN</div>
+    </button>
+    <button class="knopf knopf2" onclick="zeigeSpiel2()">
+      <div class="beispiel">🍎 =
+        <span class="wackel schief1">P</span>
+        <span class="wackel schief2">A</span>
+        <span class="wackel schief3">L</span>
+      </div>
+      <div class="titel">BUCHSTABEN ORDNEN</div>
+    </button>
+    <button class="knopf knopf3" onclick="zeigeSpiel3()">
+      <div class="beispiel">🍎 ➡️ ⌨️</div>
+      <div class="titel">WORT TIPPEN</div>
+    </button>
+  </div>
+
+  <!-- ============ SPIEL 1 ============ -->
+  <div id="spiel1" class="screen">
+    <button class="zurueck" onclick="zeigeMenue()">⬅️ ZURÜCK</button>
+    <img src="bilder/spiel1.png" alt="" class="figur">
+    <p style="font-size:22px;">WELCHER KLEINE BUCHSTABE PASST?</p>
+    <div id="grosserBuchstabe" class="grosser-buchstabe">A</div>
+    <div id="auswahl" class="auswahl"></div>
+    <div id="meldung1" class="meldung"></div>
+  </div>
+
+  <!-- ============ SPIEL 2 ============ -->
+  <div id="spiel2" class="screen">
+    <button class="zurueck" onclick="zeigeMenue()">⬅️ ZURÜCK</button>
+    <img src="bilder/spiel2.png" alt="" class="figur">
+    <p style="font-size:22px;">LEGE DAS WORT!</p>
+    <div id="bild2" class="bild-emoji">🍎</div>
+    <div id="wortZeile" class="wort-zeile"></div>
+    <div id="vorrat" class="buchstaben-vorrat"></div>
+    <div id="meldung2" class="meldung"></div>
+  </div>
+
+  <!-- ============ SPIEL 3 ============ -->
+  <div id="spiel3" class="screen">
+    <button class="zurueck" onclick="zeigeMenue()">⬅️ ZURÜCK</button>
+    <img src="bilder/spiel3.png" alt="" class="figur">
+    <p style="font-size:22px;">TIPPE DAS WORT!</p>
+    <div id="bild3" class="bild-emoji">🍎</div>
+    <div id="wortZeile3" class="wort-zeile"></div>
+    <div id="tastatur" class="tastatur"></div>
+    <div id="meldung3" class="meldung"></div>
+  </div>
+
+  <script>
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+    // ====== LEVEL & FORTSCHRITT ======
+    const PRO_LEVEL = 10;
+    let punkte = parseInt(localStorage.getItem('mateo_punkte') || '0');
+    function zeigeFortschritt() {
+      const level = Math.floor(punkte / PRO_LEVEL) + 1;
+      const fortschritt = punkte % PRO_LEVEL;
+      document.getElementById('sterneZaehler').textContent = "LEVEL " + level + " · " + fortschritt + "/" + PRO_LEVEL;
+      const badge = document.getElementById('stufeAnzeige');
+      if (badge) badge.textContent = "LEVEL " + level;
+    }
+    function richtigGezaehlt(meldungElement) {
+      const vorherLevel = Math.floor(punkte / PRO_LEVEL);
+      punkte++;
+      localStorage.setItem('mateo_punkte', punkte);
+      const nachherLevel = Math.floor(punkte / PRO_LEVEL);
+      zeigeFortschritt();
+      if (nachherLevel > vorherLevel) {
+        konfetti();
+        tonLevelUp();
+        if (meldungElement) meldungElement.textContent = "🎉 LEVEL " + (nachherLevel + 1) + "! 🎉";
+      }
+      if (meldungElement) {
+        meldungElement.classList.remove('jubel');
+        void meldungElement.offsetWidth;
+        meldungElement.classList.add('jubel');
+      }
+    }
+    function konfetti() {
+      const symbole = ["🪶", "☀️", "🐎", "🏕️", "⭐", "🍂"];
+      for (let i = 0; i < 45; i++) {
+        const teil = document.createElement('div');
+        teil.className = 'konfetti';
+        teil.textContent = symbole[Math.floor(Math.random() * symbole.length)];
+        teil.style.left = Math.random() * 100 + "vw";
+        teil.style.animationDelay = (Math.random() * 0.6) + "s";
+        document.body.appendChild(teil);
+        setTimeout(() => teil.remove(), 3800);
+      }
+    }
+
+    // ====== TÖNE ======
+    let audioCtx = null;
+    function spieleTon(frequenz, start, dauer, typ = 'sine') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = typ; osc.frequency.value = frequenz;
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.001, audioCtx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + dauer);
+      osc.start(audioCtx.currentTime + start);
+      osc.stop(audioCtx.currentTime + start + dauer);
+    }
+    function tonRichtig() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      spieleTon(523, 0, 0.15); spieleTon(659, 0.15, 0.15); spieleTon(784, 0.30, 0.25);
+    }
+    function tonLevelUp() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      spieleTon(523, 0, 0.15); spieleTon(659, 0.15, 0.15);
+      spieleTon(784, 0.30, 0.15); spieleTon(1047, 0.45, 0.40);
+    }
+    function tonFalsch() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      spieleTon(330, 0, 0.15, 'triangle'); spieleTon(247, 0.15, 0.25, 'triangle');
+    }
+
+    // ====== LERN-GEDÄCHTNIS ======
+    function ladeGewichte(schluessel, elemente) {
+      const gespeichert = localStorage.getItem(schluessel);
+      if (gespeichert) return JSON.parse(gespeichert);
+      const neu = {}; elemente.forEach(e => neu[e] = 1); return neu;
+    }
+    function speichereGewichte(schluessel, gewichte) {
+      localStorage.setItem(schluessel, JSON.stringify(gewichte));
+    }
+    function waehleGewichtet(gewichte, elemente) {
+      let summe = 0; elemente.forEach(e => summe += gewichte[e]);
+      let zufall = Math.random() * summe;
+      for (const e of elemente) { zufall -= gewichte[e]; if (zufall <= 0) return e; }
+      return elemente[0];
+    }
+    function aktualisiereGewicht(gewichte, element, warRichtig) {
+      if (warRichtig) gewichte[element] = Math.max(0.3, gewichte[element] - 0.3);
+      else gewichte[element] = Math.min(6, gewichte[element] + 1.5);
+    }
+
+    // ====== AUFBAUENDES BUCHSTABEN-SYSTEM ======
+    const buchstabenStufen = [
+      ["M","A","T","E","O","I","L","K","P"],
+      ["N","S","U","B","D"],
+      ["R","F","G","H","W","Z"],
+      ["C","J","Q","V","X","Y"]
+    ];
+    let aktuelleStufe = parseInt(localStorage.getItem('mateo_stufe') || '0');
+    function aktiveBuchstaben() {
+      let liste = [];
+      for (let i = 0; i <= aktuelleStufe && i < buchstabenStufen.length; i++) {
+        liste = liste.concat(buchstabenStufen[i]);
+      }
+      return liste;
+    }
+    function hatSchwierigeKombi(wort) {
+      return ["SCH","CH","CK","ST","PF"].some(k => wort.includes(k));
+    }
+    function pruefeStufenAufstieg() {
+      if (aktuelleStufe >= buchstabenStufen.length - 1) return;
+      const jetzige = buchstabenStufen[aktuelleStufe];
+      const gemeistert = jetzige.every(b => gewichteBuchstaben[b] <= 0.5);
+      if (gemeistert) { aktuelleStufe++; localStorage.setItem('mateo_stufe', aktuelleStufe); }
+    }
+
+    // ====== BILDSCHIRME UMSCHALTEN ======
+    function zeigeMenue() {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
+      document.getElementById('menue').classList.add('aktiv');
+      zeigeFortschritt();
+    }
+    function zeigeSpiel1() {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
+      document.getElementById('spiel1').classList.add('aktiv');
+      neueAufgabe1();
+    }
+    function zeigeSpiel2() {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
+      document.getElementById('spiel2').classList.add('aktiv');
+      neueAufgabe2();
+    }
+    function zeigeSpiel3() {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
+      document.getElementById('spiel3').classList.add('aktiv');
+      neueAufgabe3();
+    }
+
+    function mischen(liste) { return liste.slice().sort(() => Math.random() - 0.5); }
+
+    // ====== SPIEL 1 ======
+    const alleBuchstaben = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    let gewichteBuchstaben = ladeGewichte('mateo_buchstaben', alleBuchstaben);
+    function neueAufgabe1() {
+      document.getElementById('meldung1').textContent = "";
+      const aktive = aktiveBuchstaben();
+      const richtiger = waehleGewichtet(gewichteBuchstaben, aktive);
+      document.getElementById('grosserBuchstabe').textContent = richtiger;
+      const falsche = mischen(aktive.filter(b => b !== richtiger)).slice(0, 2);
+      const optionen = mischen([richtiger, ...falsche]);
+      const auswahl = document.getElementById('auswahl');
+      auswahl.innerHTML = "";
+      optionen.forEach(buchstabe => {
+        const knopf = document.createElement('button');
+        knopf.className = 'buchstaben-knopf';
+        knopf.textContent = buchstabe.toLowerCase();
+        knopf.onclick = () => pruefe1(knopf, buchstabe, richtiger);
+        auswahl.appendChild(knopf);
+      });
+    }
+    function pruefe1(knopf, gewaehlt, richtiger) {
+      if (gewaehlt === richtiger) {
+        knopf.classList.add('richtig');
+        document.getElementById('meldung1').textContent = "🎉 SUPER! 🎉";
+        tonRichtig();
+        richtigGezaehlt(document.getElementById('meldung1'));
+        aktualisiereGewicht(gewichteBuchstaben, richtiger, true);
+        speichereGewichte('mateo_buchstaben', gewichteBuchstaben);
+        pruefeStufenAufstieg();
+        setTimeout(neueAufgabe1, 1500);
+      } else {
+        knopf.classList.add('falsch');
+        document.getElementById('meldung1').textContent = "🤔 PROBIER NOCHMAL!";
+        tonFalsch();
+        aktualisiereGewicht(gewichteBuchstaben, richtiger, false);
+        speichereGewichte('mateo_buchstaben', gewichteBuchstaben);
+      }
+    }
+
+    // ====== WÖRTER ======
+    const woerter = [
+      { emoji: "👵", wort: "OMA" }, { emoji: "👴", wort: "OPA" },
+      { emoji: "🌴", wort: "PALME" }, { emoji: "🍅", wort: "TOMATE" },
+      { emoji: "🦙", wort: "LAMA" }, { emoji: "💡", wort: "LAMPE" },
+      { emoji: "📦", wort: "PAKET" }, { emoji: "🐭", wort: "MAUS" },
+      { emoji: "👃", wort: "NASE" }, { emoji: "🌳", wort: "BAUM" },
+      { emoji: "🌸", wort: "BLUME" }, { emoji: "🍌", wort: "BANANE" },
+      { emoji: "🌙", wort: "MOND" }, { emoji: "🐶", wort: "HUND" },
+      { emoji: "🏠", wort: "HAUS" }, { emoji: "🌹", wort: "ROSE" },
+      { emoji: "🐰", wort: "HASE" }, { emoji: "🍴", wort: "GABEL" },
+      { emoji: "🚂", wort: "ZUG" }, { emoji: "🐦", wort: "VOGEL" }
+    ];
+    const wortListe = woerter.map(w => w.wort);
+    let gewichteWoerter = ladeGewichte('mateo_woerter', wortListe);
+    function findeEmoji(wort) { return woerter.find(w => w.wort === wort).emoji; }
+    function verfuegbareWoerter() {
+      const aktive = aktiveBuchstaben();
+      const liste = woerter.filter(w =>
+        !hatSchwierigeKombi(w.wort) && w.wort.split("").every(b => aktive.includes(b)));
+      return liste.length > 0 ? liste : [woerter[0]];
+    }
+
+    // ====== SPIEL 2 ======
+    let aktuellesWort = ""; let naechsterIndex = 0;
+    function neueAufgabe2() {
+      document.getElementById('meldung2').textContent = "";
+      naechsterIndex = 0;
+      const namen = verfuegbareWoerter().map(w => w.wort);
+      aktuellesWort = waehleGewichtet(gewichteWoerter, namen);
+      document.getElementById('bild2').textContent = findeEmoji(aktuellesWort);
+      const wortZeile = document.getElementById('wortZeile');
+      wortZeile.innerHTML = "";
+      for (let i = 0; i < aktuellesWort.length; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'slot'; slot.id = 'slot' + i;
+        wortZeile.appendChild(slot);
+      }
+      const buchstaben = mischen(aktuellesWort.split(""));
+      const vorrat = document.getElementById('vorrat');
+      vorrat.innerHTML = "";
+      buchstaben.forEach(buchstabe => {
+        const knopf = document.createElement('button');
+        knopf.className = 'vorrat-knopf';
+        knopf.textContent = buchstabe;
+        knopf.onclick = () => pruefe2(knopf, buchstabe);
+        vorrat.appendChild(knopf);
+      });
+    }
+    function pruefe2(knopf, gewaehlt) {
+      const richtigerBuchstabe = aktuellesWort[naechsterIndex];
+      if (gewaehlt === richtigerBuchstabe) {
+        const slot = document.getElementById('slot' + naechsterIndex);
+        slot.textContent = gewaehlt; slot.classList.add('gefuellt');
+        knopf.classList.add('benutzt');
+        naechsterIndex++; tonRichtig();
+        if (naechsterIndex === aktuellesWort.length) {
+          document.getElementById('meldung2').textContent = "🎉 SUPER! 🎉";
+          richtigGezaehlt(document.getElementById('meldung2'));
+          aktualisiereGewicht(gewichteWoerter, aktuellesWort, true);
+          speichereGewichte('mateo_woerter', gewichteWoerter);
+          setTimeout(neueAufgabe2, 2000);
+        }
+      } else {
+        knopf.classList.add('falsch');
+        document.getElementById('meldung2').textContent = "🤔 WELCHER KOMMT ZUERST?";
+        tonFalsch();
+        aktualisiereGewicht(gewichteWoerter, aktuellesWort, false);
+        speichereGewichte('mateo_woerter', gewichteWoerter);
+        setTimeout(() => {
+          knopf.classList.remove('falsch');
+          document.getElementById('meldung2').textContent = "";
+        }, 800);
+      }
+    }
+
+    // ====== SPIEL 3 ======
+    const tastaturReihen = [
+      "QWERTZUIOP".split(""), "ASDFGHJKL".split(""), "YXCVBNM".split("")
+    ];
+    let wort3 = ""; let index3 = 0;
+    function neueAufgabe3() {
+      document.getElementById('meldung3').textContent = "";
+      index3 = 0;
+      const namen = verfuegbareWoerter().map(w => w.wort);
+      wort3 = waehleGewichtet(gewichteWoerter, namen);
+      document.getElementById('bild3').textContent = findeEmoji(wort3);
+      const zeile = document.getElementById('wortZeile3');
+      zeile.innerHTML = "";
+      for (let i = 0; i < wort3.length; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'slot gruen'; slot.id = 'slot3_' + i;
+        zeile.appendChild(slot);
+      }
+      const tastatur = document.getElementById('tastatur');
+      tastatur.innerHTML = "";
+      tastaturReihen.forEach(reihe => {
+        const reihenDiv = document.createElement('div');
+        reihenDiv.className = 'tasten-reihe';
+        reihe.forEach(buchstabe => {
+          const taste = document.createElement('button');
+          taste.className = 'taste';
+          taste.textContent = buchstabe;
+          taste.onclick = () => pruefe3(taste, buchstabe);
+          reihenDiv.appendChild(taste);
+        });
+        tastatur.appendChild(reihenDiv);
+      });
+    }
+    function pruefe3(taste, gewaehlt) {
+      const richtigerBuchstabe = wort3[index3];
+      if (gewaehlt === richtigerBuchstabe) {
+        const slot = document.getElementById('slot3_' + index3);
+        slot.textContent = gewaehlt; slot.classList.add('gefuellt');
+        index3++; tonRichtig();
+        if (index3 === wort3.length) {
+          document.getElementById('meldung3').textContent = "🎉 SUPER! 🎉";
+          richtigGezaehlt(document.getElementById('meldung3'));
+          aktualisiereGewicht(gewichteWoerter, wort3, true);
+          speichereGewichte('mateo_woerter', gewichteWoerter);
+          setTimeout(neueAufgabe3, 2000);
+        }
+      } else {
+        taste.classList.add('falsch');
+        document.getElementById('meldung3').textContent = "🤔 PROBIER NOCHMAL!";
+        tonFalsch();
+        aktualisiereGewicht(gewichteWoerter, wort3, false);
+        speichereGewichte('mateo_woerter', gewichteWoerter);
+        setTimeout(() => {
+          taste.classList.remove('falsch');
+          document.getElementById('meldung3').textContent = "";
+        }, 800);
+      }
+    }
+    function fortschrittZuruecksetzen() {
+      if (confirm("Wirklich Mateos Fortschritt löschen?")) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    zeigeFortschritt();
+  </script>
+
+</body>
+</html>
