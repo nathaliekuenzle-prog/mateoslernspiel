@@ -8,104 +8,14 @@
   <meta name="apple-mobile-web-app-title" content="Mateo">
   <meta name="theme-color" content="#c8622d">
   <link rel="apple-touch-icon" href="bilder/icon.png">
-  <title>Mateos Lernspiel</title>
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; margin: 0; padding: 0; }
-    body {
-      font-family: 'Chalkboard SE', 'Comic Sans MS', 'Arial Rounded MT Bold', system-ui, sans-serif;
-      background: linear-gradient(180deg, #7ec8e3 0%, #a8dda8 60%, #d9b36a 100%);
-      text-align: center; color: #5a3a1a;
-      user-select: none; -webkit-user-select: none;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      overflow-x: hidden;
-    }
-    h1 { font-size: 34px; margin: 12px 0 4px; color: #c8622d; text-shadow: 2px 2px 0 #fff3; letter-spacing: 1px; }
-    h1::before { content: "🪶 "; } h1::after { content: " 🪶"; }
-    .stufe-anzeige {
-      display: inline-block; font-size: 18px; color: #fff; background: #8b5a2b;
-      padding: 6px 20px; border-radius: 20px; margin: 4px auto 10px;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.2); border: 3px solid #ffe0a3; cursor: pointer;
-    }
-    .screen { display: none; padding-bottom: 20px; }
-    .screen.aktiv { display: block; }
-    #spiel1, #spiel2, #spiel3 { padding-top: 58px; }
-    .knopf {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      width: 88%; max-width: 460px; margin: 10px auto; padding: 12px;
-      color: white; border: 4px solid #fff3d6; border-radius: 22px; cursor: pointer;
-      box-shadow: 0 5px 0 rgba(0,0,0,0.25); transition: transform 0.1s; font-family: inherit;
-    }
-    .knopf:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
-    .knopf1 { background: linear-gradient(160deg, #e07a3f, #c8622d); }
-    .knopf2 { background: linear-gradient(160deg, #4a90a4, #2e6e7e); }
-    .knopf3 { background: linear-gradient(160deg, #6a9c4f, #4d7a37); }
-    .beispiel { font-size: 32px; font-weight: bold; letter-spacing: 3px; margin-bottom: 4px; }
-    .titel { font-size: 17px; letter-spacing: 2px; }
-    .wackel { display: inline-block; background: rgba(255,255,255,0.25); border-radius: 8px; padding: 1px 6px; margin: 0 2px; }
-    .schief1 { transform: rotate(-12deg); } .schief2 { transform: rotate(8deg); } .schief3 { transform: rotate(-5deg); }
-    .grosser-buchstabe { font-size: 120px; font-weight: bold; color: #c8622d; margin: 6px auto; text-shadow: 3px 3px 0 #fff6; }
-    .auswahl { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
-    .buchstaben-knopf {
-      font-size: 60px; font-weight: bold; width: 100px; height: 100px;
-      background: #fff8ec; color: #5a3a1a; border: 5px solid #6a9c4f; border-radius: 24px;
-      cursor: pointer; font-family: inherit; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
-    }
-    .buchstaben-knopf:active { transform: translateY(4px); }
-    .buchstaben-knopf.richtig { background: #6a9c4f; color: white; }
-    .buchstaben-knopf.falsch { background: #e07a3f; color: white; }
-    .meldung { font-size: 34px; height: 44px; margin-top: 14px; color: #c8622d; }
-    .zurueck {
-      position: fixed; top: calc(env(safe-area-inset-top) + 10px); left: 12px; z-index: 55;
-      font-size: 18px; background: #ffd27f; color: #5a3a1a; border: 3px solid #fff3d6;
-      border-radius: 18px; padding: 9px 18px; cursor: pointer;
-      font-family: inherit; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-    }
-    .bild-emoji { font-size: 100px; margin: 4px auto; }
-    .wort-zeile { display: flex; justify-content: center; gap: 6px; margin: 12px auto; min-height: 70px; flex-wrap: nowrap; }
-    .slot {
-      width: 48px; height: 66px; border: 4px dashed #2e6e7e; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; color: #2e6e7e;
-      background: rgba(255,255,255,0.35); flex-shrink: 0;
-    }
-    .slot.gefuellt { border-style: solid; background: #2e6e7e; color: white; }
-    .buchstaben-vorrat { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-    .vorrat-knopf {
-      font-size: 46px; font-weight: bold; width: 76px; height: 76px;
-      background: #fff8ec; color: #5a3a1a; border: 5px solid #e07a3f; border-radius: 18px;
-      cursor: pointer; font-family: inherit; box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
-    }
-    .vorrat-knopf:active { transform: translateY(4px); }
-    .vorrat-knopf.benutzt { visibility: hidden; }
-    .tastatur { width: 100%; max-width: 500px; margin: 14px auto 0; }
-    .tasten-reihe { display: flex; justify-content: center; gap: 4px; margin-bottom: 5px; }
-    .taste {
-      font-size: 22px; font-weight: bold;
-      width: calc((100vw - 60px) / 10); max-width: 44px; height: 48px;
-      background: #fff8ec; color: #5a3a1a; border: 2px solid #6a9c4f; border-radius: 10px;
-      cursor: pointer; font-family: inherit; box-shadow: 0 3px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
-    }
-    .taste:active { transform: translateY(2px); }
-    .taste.falsch { background: #e07a3f; color: white; }
-    .slot.gruen { border-color: #6a9c4f; color: #6a9c4f; }
-    .slot.gruen.gefuellt { background: #6a9c4f; color: white; }
-    .sterne-zaehler {
-      position: fixed; top: calc(env(safe-area-inset-top) + 10px); right: 12px;
-      font-size: 17px; font-weight: bold; color: #fff; background: #8b5a2b;
-      padding: 7px 14px; border-radius: 18px; border: 2px solid #ffe0a3;
-      box-shadow: 0 3px 0 rgba(0,0,0,0.2); z-index: 55; cursor: pointer;
-    }
-    .konfetti { position: fixed; top: -30px; font-size: 26px; z-index: 100; pointer-events: none; animation: fallen 3s linear forwards; }
-    @keyframes fallen { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(105vh) rotate(540deg); opacity: 0.9; } }
-    @keyframes pulsieren { 0% { transform: scale(0.5); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-    .meldung.jubel { animation: pulsieren 0.6s ease; }
-    .figur { width: 34%; max-width: 150px; height: auto; margin: 6px auto 0; display: block; border-radius: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
-  </style>
+  <link rel="stylesheet" href="stil.css">
+  <title>Mateo</title>
 </head>
 <body>
 
   <div id="sterneZaehler" class="sterne-zaehler">LEVEL 1 · 0/10</div>
 
+  <!-- ============ STARTMENÜ ============ -->
   <div id="menue" class="screen aktiv">
     <h1>MATEO</h1>
     <img src="bilder/start.png" alt="Mateo mit Pony" class="figur">
@@ -123,6 +33,7 @@
     </button>
   </div>
 
+  <!-- ============ SPIEL 1 ============ -->
   <div id="spiel1" class="screen">
     <button class="zurueck" onclick="zeigeMenue()">⬅️ ZURÜCK</button>
     <img src="bilder/spiel1.png" alt="" class="figur">
@@ -132,6 +43,7 @@
     <div id="meldung1" class="meldung"></div>
   </div>
 
+  <!-- ============ SPIEL 2 ============ -->
   <div id="spiel2" class="screen">
     <button class="zurueck" onclick="zeigeMenue()">⬅️ ZURÜCK</button>
     <img src="bilder/spiel2.png" alt="" class="figur">
@@ -142,6 +54,7 @@
     <div id="meldung2" class="meldung"></div>
   </div>
 
+  <!-- ============ SPIEL 3 ============ -->
   <div id="spiel3" class="screen">
     <button class="zurueck" onclick="zeigeMenue()">⬅️ ZURÜCK</button>
     <img src="bilder/spiel3.png" alt="" class="figur">
@@ -152,278 +65,7 @@
     <div id="meldung3" class="meldung"></div>
   </div>
 
-  <script>
-    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
-
-    // ====== LEVEL & FORTSCHRITT ======
-    const PRO_LEVEL = 10;
-    let punkte = parseInt(localStorage.getItem('mateo_punkte') || '0');
-    function zeigeFortschritt() {
-      const level = Math.floor(punkte / PRO_LEVEL) + 1;
-      document.getElementById('sterneZaehler').textContent = "LEVEL " + level + " · " + (punkte % PRO_LEVEL) + "/" + PRO_LEVEL;
-      const badge = document.getElementById('stufeAnzeige');
-      if (badge) badge.textContent = "LEVEL " + level;
-    }
-    function richtigGezaehlt(meldungElement) {
-      const vorher = Math.floor(punkte / PRO_LEVEL);
-      punkte++; localStorage.setItem('mateo_punkte', punkte);
-      const nachher = Math.floor(punkte / PRO_LEVEL);
-      zeigeFortschritt();
-      if (nachher > vorher) {
-        konfetti(); tonLevelUp();
-        if (meldungElement) meldungElement.textContent = "🎉 LEVEL " + (nachher + 1) + "! 🎉";
-      }
-      if (meldungElement) { meldungElement.classList.remove('jubel'); void meldungElement.offsetWidth; meldungElement.classList.add('jubel'); }
-    }
-    function konfetti() {
-      const symbole = ["🪶", "☀️", "🐎", "🏕️", "⭐", "🍂"];
-      for (let i = 0; i < 45; i++) {
-        const teil = document.createElement('div');
-        teil.className = 'konfetti';
-        teil.textContent = symbole[Math.floor(Math.random() * symbole.length)];
-        teil.style.left = Math.random() * 100 + "vw";
-        teil.style.animationDelay = (Math.random() * 0.6) + "s";
-        document.body.appendChild(teil);
-        setTimeout(() => teil.remove(), 3800);
-      }
-    }
-
-    // ====== RESET per LANGEM DRÜCKEN ======
-    function fortschrittZuruecksetzen() {
-      if (confirm("Wirklich Mateos Fortschritt löschen?")) { localStorage.clear(); location.reload(); }
-    }
-    function langesDruecken(el) {
-      if (!el) return;
-      let timer = null;
-      const start = () => { timer = setTimeout(fortschrittZuruecksetzen, 1200); };
-      const stop = () => clearTimeout(timer);
-      el.addEventListener('touchstart', start, { passive: true });
-      el.addEventListener('touchend', stop); el.addEventListener('touchmove', stop);
-      el.addEventListener('mousedown', start); el.addEventListener('mouseup', stop); el.addEventListener('mouseleave', stop);
-    }
-    langesDruecken(document.getElementById('sterneZaehler'));
-    langesDruecken(document.getElementById('stufeAnzeige'));
-
-    // ====== TÖNE ======
-    let audioCtx = null;
-    function spieleTon(f, s, d, typ = 'sine') {
-      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-      osc.type = typ; osc.frequency.value = f; osc.connect(gain); gain.connect(audioCtx.destination);
-      gain.gain.setValueAtTime(0.001, audioCtx.currentTime + s);
-      gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + s + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + s + d);
-      osc.start(audioCtx.currentTime + s); osc.stop(audioCtx.currentTime + s + d);
-    }
-    function tonRichtig() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); spieleTon(523,0,0.15); spieleTon(659,0.15,0.15); spieleTon(784,0.30,0.25); }
-    function tonLevelUp() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); spieleTon(523,0,0.15); spieleTon(659,0.15,0.15); spieleTon(784,0.30,0.15); spieleTon(1047,0.45,0.40); }
-    function tonFalsch() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); spieleTon(330,0,0.15,'triangle'); spieleTon(247,0.15,0.25,'triangle'); }
-
-    // ====== BUCHSTABEN-GEDÄCHTNIS (Spiel 1) ======
-    function ladeGewichte(k, el) { const g = localStorage.getItem(k); if (g) return JSON.parse(g); const n = {}; el.forEach(e => n[e] = 1); return n; }
-    function speichereGewichte(k, g) { localStorage.setItem(k, JSON.stringify(g)); }
-    function waehleGewichtet(g, el) { let s = 0; el.forEach(e => s += g[e]); let z = Math.random() * s; for (const e of el) { z -= g[e]; if (z <= 0) return e; } return el[0]; }
-    function waehleOhneWiederholung(g, el, letztes) { if (el.length <= 1) return el[0]; let w, v = 0; do { w = waehleGewichtet(g, el); v++; } while (w === letztes && v < 12); return w; }
-    function aktualisiereGewicht(g, e, ok) { if (ok) g[e] = Math.max(0.3, g[e] - 0.3); else g[e] = Math.min(6, g[e] + 1.5); }
-
-    // ====== AUFBAUENDES BUCHSTABEN-SYSTEM ======
-    const buchstabenStufen = [
-      ["M","A","T","E","O","I","L","K","P","H","N"], // Stufe 1
-      ["S","U","B","D"],                             // Stufe 2
-      ["R","F","G","W","Z"],                         // Stufe 3
-      ["C","J","Q","V","X","Y"]                      // Stufe 4
-    ];
-    let aktuelleStufe = parseInt(localStorage.getItem('mateo_stufe') || '0');
-    function aktiveBuchstaben() { let l = []; for (let i = 0; i <= aktuelleStufe && i < buchstabenStufen.length; i++) l = l.concat(buchstabenStufen[i]); return l; }
-    function hatSchwierigeKombi(w) { return ["SCH","CH","CK","ST","PF"].some(k => w.includes(k)); }
-    function pruefeStufenAufstieg() {
-      if (aktuelleStufe >= buchstabenStufen.length - 1) return;
-      if (buchstabenStufen[aktuelleStufe].every(b => gewichteBuchstaben[b] <= 0.5)) {
-        aktuelleStufe++; localStorage.setItem('mateo_stufe', aktuelleStufe);
-      }
-    }
-
-    // ====== BILDSCHIRME ======
-    function zeigeMenue() {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
-      document.getElementById('menue').classList.add('aktiv');
-      document.getElementById('sterneZaehler').style.display = 'none';
-      zeigeFortschritt();
-    }
-    function spielStart(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('aktiv'));
-      document.getElementById(id).classList.add('aktiv');
-      document.getElementById('sterneZaehler').style.display = 'block';
-    }
-    function zeigeSpiel1() { spielStart('spiel1'); neueAufgabe1(); }
-    function zeigeSpiel2() { spielStart('spiel2'); neueAufgabe2(); }
-    function zeigeSpiel3() { spielStart('spiel3'); neueAufgabe3(); }
-    function mischen(l) { return l.slice().sort(() => Math.random() - 0.5); }
-    let letztes1 = "", letztes2 = "", letztes3 = "";
-
-    // ====== SPIEL 1 ======
-    const alleBuchstaben = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    let gewichteBuchstaben = ladeGewichte('mateo_buchstaben', alleBuchstaben);
-    function neueAufgabe1() {
-      document.getElementById('meldung1').textContent = "";
-      const aktive = aktiveBuchstaben();
-      const richtiger = waehleOhneWiederholung(gewichteBuchstaben, aktive, letztes1);
-      letztes1 = richtiger;
-      document.getElementById('grosserBuchstabe').textContent = richtiger;
-      const falsche = mischen(aktive.filter(b => b !== richtiger)).slice(0, 2);
-      const optionen = mischen([richtiger, ...falsche]);
-      const auswahl = document.getElementById('auswahl'); auswahl.innerHTML = "";
-      optionen.forEach(b => {
-        const k = document.createElement('button');
-        k.className = 'buchstaben-knopf'; k.textContent = b.toLowerCase();
-        k.onclick = () => pruefe1(k, b, richtiger); auswahl.appendChild(k);
-      });
-    }
-    function pruefe1(knopf, gewaehlt, richtiger) {
-      if (gewaehlt === richtiger) {
-        knopf.classList.add('richtig');
-        document.getElementById('meldung1').textContent = "🎉 SUPER! 🎉";
-        tonRichtig(); richtigGezaehlt(document.getElementById('meldung1'));
-        aktualisiereGewicht(gewichteBuchstaben, richtiger, true);
-        speichereGewichte('mateo_buchstaben', gewichteBuchstaben);
-        pruefeStufenAufstieg(); setTimeout(neueAufgabe1, 1500);
-      } else {
-        knopf.classList.add('falsch');
-        document.getElementById('meldung1').textContent = "🤔 PROBIER NOCHMAL!";
-        tonFalsch();
-        aktualisiereGewicht(gewichteBuchstaben, richtiger, false);
-        speichereGewichte('mateo_buchstaben', gewichteBuchstaben);
-      }
-    }
-
-    // ====== WÖRTER (Tiere · Gegenstände · Fahrzeuge) ======
-    const woerter = [
-      { emoji: "👵", wort: "OMA" }, { emoji: "👴", wort: "OPA" }, { emoji: "👩", wort: "MAMA" },
-      { emoji: "🏕️", wort: "TIPI" }, { emoji: "🦙", wort: "LAMA" }, { emoji: "🦈", wort: "HAI" },
-      { emoji: "🐫", wort: "KAMEL" }, { emoji: "💡", wort: "LAMPE" }, { emoji: "📦", wort: "PAKET" },
-      { emoji: "⛑️", wort: "HELM" }, { emoji: "🎹", wort: "PIANO" }, { emoji: "🎵", wort: "NOTE" },
-      { emoji: "🧥", wort: "MANTEL" }, { emoji: "🌴", wort: "PALME" }, { emoji: "🍅", wort: "TOMATE" },
-      { emoji: "🍈", wort: "MELONE" }, { emoji: "🎬", wort: "KINO" }, { emoji: "🏨", wort: "HOTEL" },
-      { emoji: "🪐", wort: "PLANET" },
-      { emoji: "🐭", wort: "MAUS" }, { emoji: "🐰", wort: "HASE" }, { emoji: "🐶", wort: "HUND" },
-      { emoji: "🫏", wort: "ESEL" }, { emoji: "🦉", wort: "EULE" }, { emoji: "🐝", wort: "BIENE" },
-      { emoji: "🐼", wort: "PANDA" }, { emoji: "🚗", wort: "AUTO" }, { emoji: "🚌", wort: "BUS" },
-      { emoji: "🌳", wort: "BAUM" }, { emoji: "🌙", wort: "MOND" }, { emoji: "👃", wort: "NASE" },
-      { emoji: "🍌", wort: "BANANE" }, { emoji: "🪡", wort: "NADEL" }, { emoji: "🧹", wort: "BESEN" },
-      { emoji: "🌷", wort: "BLUME" },
-      { emoji: "🐱", wort: "KATZE" }, { emoji: "🦔", wort: "IGEL" }, { emoji: "🐋", wort: "WAL" },
-      { emoji: "🐯", wort: "TIGER" }, { emoji: "🐬", wort: "DELFIN" }, { emoji: "🦓", wort: "ZEBRA" },
-      { emoji: "🐛", wort: "WURM" }, { emoji: "🍴", wort: "GABEL" }, { emoji: "🌹", wort: "ROSE" },
-      { emoji: "🛋️", wort: "SOFA" }, { emoji: "🕯️", wort: "KERZE" }, { emoji: "🪣", wort: "EIMER" },
-      { emoji: "🏗️", wort: "KRAN" }, { emoji: "🚂", wort: "ZUG" }, { emoji: "🚀", wort: "RAKETE" },
-      { emoji: "🐦", wort: "VOGEL" }, { emoji: "🏺", wort: "VASE" }, { emoji: "🚕", wort: "TAXI" },
-      { emoji: "🚲", wort: "VELO" }
-    ];
-    function findeEmoji(w) { return woerter.find(x => x.wort === w).emoji; }
-
-    // ====== MEISTERN: korrekt gelöste Wörter kommen nicht wieder ======
-    let gemeistert2 = JSON.parse(localStorage.getItem('mateo_gemeistert2') || '[]');
-    let gemeistert3 = JSON.parse(localStorage.getItem('mateo_gemeistert3') || '[]');
-    function speichereGemeistert() {
-      localStorage.setItem('mateo_gemeistert2', JSON.stringify(gemeistert2));
-      localStorage.setItem('mateo_gemeistert3', JSON.stringify(gemeistert3));
-    }
-    function verfuegbareWoerter(gemeistert) {
-      const aktive = aktiveBuchstaben();
-      const passt = w => !hatSchwierigeKombi(w.wort) && w.wort.split("").every(b => aktive.includes(b));
-      let liste = woerter.filter(w => passt(w) && !gemeistert.includes(w.wort));
-      if (liste.length === 0) { gemeistert.length = 0; speichereGemeistert(); liste = woerter.filter(passt); }
-      return liste;
-    }
-    function zufallOhneWiederholung(liste, letztes) {
-      if (liste.length <= 1) return liste[0];
-      let w, v = 0;
-      do { w = liste[Math.floor(Math.random() * liste.length)]; v++; } while (w === letztes && v < 12);
-      return w;
-    }
-
-    // ====== SPIEL 2 ======
-    let aktuellesWort = "", naechsterIndex = 0, fehler2 = false;
-    function neueAufgabe2() {
-      document.getElementById('meldung2').textContent = "";
-      naechsterIndex = 0; fehler2 = false;
-      const namen = verfuegbareWoerter(gemeistert2).map(w => w.wort);
-      aktuellesWort = zufallOhneWiederholung(namen, letztes2);
-      letztes2 = aktuellesWort;
-      document.getElementById('bild2').textContent = findeEmoji(aktuellesWort);
-      const zeile = document.getElementById('wortZeile'); zeile.innerHTML = "";
-      for (let i = 0; i < aktuellesWort.length; i++) {
-        const s = document.createElement('div'); s.className = 'slot'; s.id = 'slot' + i; zeile.appendChild(s);
-      }
-      const vorrat = document.getElementById('vorrat'); vorrat.innerHTML = "";
-      mischen(aktuellesWort.split("")).forEach(b => {
-        const k = document.createElement('button'); k.className = 'vorrat-knopf'; k.textContent = b;
-        k.onclick = () => pruefe2(k, b); vorrat.appendChild(k);
-      });
-    }
-    function pruefe2(knopf, gewaehlt) {
-      if (gewaehlt === aktuellesWort[naechsterIndex]) {
-        const s = document.getElementById('slot' + naechsterIndex);
-        s.textContent = gewaehlt; s.classList.add('gefuellt'); knopf.classList.add('benutzt');
-        naechsterIndex++; tonRichtig();
-        if (naechsterIndex === aktuellesWort.length) {
-          document.getElementById('meldung2').textContent = "🎉 SUPER! 🎉";
-          richtigGezaehlt(document.getElementById('meldung2'));
-          if (!fehler2 && !gemeistert2.includes(aktuellesWort)) { gemeistert2.push(aktuellesWort); speichereGemeistert(); }
-          setTimeout(neueAufgabe2, 2000);
-        }
-      } else {
-        fehler2 = true; knopf.classList.add('falsch');
-        document.getElementById('meldung2').textContent = "🤔 WELCHER KOMMT ZUERST?";
-        tonFalsch();
-        setTimeout(() => { knopf.classList.remove('falsch'); document.getElementById('meldung2').textContent = ""; }, 800);
-      }
-    }
-
-    // ====== SPIEL 3 ======
-    const tastaturReihen = ["QWERTZUIOP".split(""), "ASDFGHJKL".split(""), "YXCVBNM".split("")];
-    let wort3 = "", index3 = 0, fehler3 = false;
-    function neueAufgabe3() {
-      document.getElementById('meldung3').textContent = "";
-      index3 = 0; fehler3 = false;
-      const namen = verfuegbareWoerter(gemeistert3).map(w => w.wort);
-      wort3 = zufallOhneWiederholung(namen, letztes3);
-      letztes3 = wort3;
-      document.getElementById('bild3').textContent = findeEmoji(wort3);
-      const zeile = document.getElementById('wortZeile3'); zeile.innerHTML = "";
-      for (let i = 0; i < wort3.length; i++) {
-        const s = document.createElement('div'); s.className = 'slot gruen'; s.id = 'slot3_' + i; zeile.appendChild(s);
-      }
-      const tastatur = document.getElementById('tastatur'); tastatur.innerHTML = "";
-      tastaturReihen.forEach(reihe => {
-        const r = document.createElement('div'); r.className = 'tasten-reihe';
-        reihe.forEach(b => {
-          const t = document.createElement('button'); t.className = 'taste'; t.textContent = b;
-          t.onclick = () => pruefe3(t, b); r.appendChild(t);
-        });
-        tastatur.appendChild(r);
-      });
-    }
-    function pruefe3(taste, gewaehlt) {
-      if (gewaehlt === wort3[index3]) {
-        const s = document.getElementById('slot3_' + index3);
-        s.textContent = gewaehlt; s.classList.add('gefuellt'); index3++; tonRichtig();
-        if (index3 === wort3.length) {
-          document.getElementById('meldung3').textContent = "🎉 SUPER! 🎉";
-          richtigGezaehlt(document.getElementById('meldung3'));
-          if (!fehler3 && !gemeistert3.includes(wort3)) { gemeistert3.push(wort3); speichereGemeistert(); }
-          setTimeout(neueAufgabe3, 2000);
-        }
-      } else {
-        fehler3 = true; taste.classList.add('falsch');
-        document.getElementById('meldung3').textContent = "🤔 PROBIER NOCHMAL!";
-        tonFalsch();
-        setTimeout(() => { taste.classList.remove('falsch'); document.getElementById('meldung3').textContent = ""; }, 800);
-      }
-    }
-
-    document.getElementById('sterneZaehler').style.display = 'none';
-    zeigeFortschritt();
-  </script>
+  <script src="spiel.js"></script>
 
 </body>
 </html>
